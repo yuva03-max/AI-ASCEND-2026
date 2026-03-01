@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}College Notes Portal{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        :root {
+            --primary: #1e40af;
+            --primary-rgb: 30, 64, 175;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e3a8a;
+            --secondary: #64748b;
+            --accent: #0ea5e9;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+
+            /* Compatibility Mapping */
+            --primary-color: var(--primary);
+            --secondary-color: var(--secondary);
+            --accent-color: var(--accent);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-color: #f1f5f9;
+            --dark-color: #0f172a;
+            --gray-color: var(--text-muted);
+            --card-bg: var(--bg-card);
+            --body-bg: var(--bg-body);
+            --text-color: var(--text-main);
+            --border-color: var(--border);
+            --shadow: var(--shadow-lg);
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        .dark-mode {
+            --bg-body: #020617;
+            --bg-card: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+            --header-bg: rgba(15, 23, 42, 0.8);
+        }
+
+        /* --- Layout Structure --- */
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar (Desktop) --- */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-nav {
+            padding: 20px 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .sidebar-link i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .sidebar-link.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.12);
+        }
+
+        .sidebar-footer {
+            padding: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* --- Main Content Area --- */
+        .main-wrapper {
+            flex-grow: 1;
+            margin-left: 0;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .main-wrapper.with-sidebar {
+            margin-left: 280px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-wrapper.with-sidebar {
+                margin-left: 0;
+            }
+        }
+
+        /* --- Top Bar --- */
+        .top-bar {
+            height: 72px;
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 0 16px;
+                height: 64px;
+            }
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-main);
+            border-radius: 10px;
+            background: var(--bg-body);
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        .main-content {
+            padding: 32px;
+            padding-bottom: 100px;
+            /* Space for bottom nav */
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        /* --- Bottom Nav (Mobile) --- */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+            padding: 0 16px;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .bottom-nav-item i {
+            font-size: 20px;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+        }
+
+        /* --- Old styles that might still be relevant or need adjustment --- */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Removed old header/nav styles */
+        header {
+            display: none;
+            /* Hide old header */
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.025em;
+        }
+
+        .logo i {
+            font-size: 24px;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(var(--primary-rgb), 0.05);
+        }
+
+        .btn-pill {
+            border-radius: 50px;
+            padding: 10px 24px;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: none;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-only {
+                display: flex;
+            }
+
+            .desktop-only {
+                display: none !important;
+            }
+
+            .main-content {
+                padding: 16px;
+                padding-bottom: 100px;
+            }
+
+            .container {
+                padding: 0;
+            }
+
+            .top-bar {
+                padding: 0 16px;
+                height: 60px;
+            }
+        }
+
+        /* Responsive Grid Utilities */
+        .grid-responsive {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 640px) {
+            .grid-responsive {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        /* Card Improvements for Mobile */
+        .card {
+            border-radius: var(--radius-lg);
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px !important;
+                border-radius: 12px;
+            }
+        }
+
+        /* Bottom Nav Enhancement */
+        .bottom-nav {
+            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(64px + env(safe-area-inset-bottom));
+        }
+
+        .bottom-nav-item i {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.5s ease forwards;
+            box-shadow: var(--shadow-md);
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #4ade80;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #4361ee;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        button.loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        button.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-top: -10px;
+            margin-left: -10px;
+            border: 2px solid #ffffff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.25rem;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(var(--primary-rgb), 0.1);
+            color: var(--primary);
+        }
+
+        /* Custom Scrollbar for better feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-container">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>CollegeNotes</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'dashboard' }}">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a href="{{ url_for('list_notes') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'list_notes' }}">
+                    <i class="fas fa-file-alt"></i> Notes
+                </a>
+                <a href="{{ url_for('list_assignments') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'list_assignments' }}">
+                    <i class="fas fa-tasks"></i> Assignments
+                </a>
+                <a href="{{ url_for('list_meetings') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'list_meetings' }}">
+                    <i class="fas fa-video"></i> Meetings
+                </a>
+                <a href="{{ url_for('list_progress') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'list_progress' }}">
+                    <i class="fas fa-chart-line"></i> Progress
+                </a>
+                <a href="{{ url_for('ai_assistant') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'ai_assistant' }}">
+                    <i class="fas fa-robot"></i> AI Assistant
+                </a>
+                <a href="{{ url_for('settings') }}"
+                    class="sidebar-link {{ 'active' if request.endpoint == 'settings' }}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                {% if current_user.role == 'professor' %}
+                <a href="{{ url_for('upload_note') }}" class="sidebar-link"
+                    style="background: var(--primary); color: white;">
+                    <i class="fas fa-plus"></i> Upload Note
+                </a>
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: var(--accent);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <div class="main-wrapper {{ 'with-sidebar' if current_user.is_authenticated else '' }}">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    {% if current_user.is_authenticated %}
+                    <div class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('home') }}" class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>CollegeNotes</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    {% if current_user.is_authenticated %}
+                    <div class="user-profile" style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-weight: 600; color: var(--text-main); font-size: 14px;" class="desktop-only">
+                            {{ current_user.username or 'User' }}
+                        </span>
+                        <div
+                            style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                            {{ (current_user.username[0] if current_user.username else '?') | upper }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url_for('login') }}" class="btn btn-ghost desktop-only">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div class="container">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+
+            <footer>
+                <div class="container">
+                    <p>College Notes Portal | Created by <a href="https://www.youtube.com/@code_chisa"
+                            style="color: var(--text-muted);">@codechisa</a> </p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="{{ url_for('dashboard') }}" class="bottom-nav-item {{ 'active' if request.endpoint == 'dashboard' }}">
+            <i class="fas fa-th-large"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('list_notes') }}"
+            class="bottom-nav-item {{ 'active' if request.endpoint == 'list_notes' }}">
+            <i class="fas fa-file-alt"></i>
+            <span>Notes</span>
+        </a>
+        <a href="{{ url_for('ai_assistant') }}"
+            class="bottom-nav-item {{ 'active' if request.endpoint == 'ai_assistant' }}">
+            <i class="fas fa-robot"></i>
+            <span>AI</span>
+        </a>
+        <a href="{{ url_for('list_meetings') }}"
+            class="bottom-nav-item {{ 'active' if request.endpoint == 'list_meetings' }}">
+            <i class="fas fa-video"></i>
+            <span>Live</span>
+        </a>
+        <a href="{{ url_for('list_progress') }}"
+            class="bottom-nav-item {{ 'active' if request.endpoint == 'list_progress' }}">
+            <i class="fas fa-chart-line"></i>
+            <span>Progress</span>
+        </a>
+        <a href="{{ url_for('settings') }}" class="bottom-nav-item {{ 'active' if request.endpoint == 'settings' }}">
+            <i class="fas fa-user-circle"></i>
+            <span>Me</span>
+        </a>
+    </nav>
+    {% endif %}
+
+    <div class="flash-messages" id="flashMessages">
+        {% set messages = get_flashed_messages(with_categories=true) %}
+        {% if messages|length > 0 %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            <i
+                class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleSidebar()"></div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('#themeToggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('drawerOverlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) {
+                overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                const icon = document.querySelector('#themeToggle i');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            setTimeout(function () {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function (alert, index) {
+                    setTimeout(function () {
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateX(100px)';
+                        setTimeout(function () {
+                            alert.remove();
+                        }, 500);
+                    }, 3000 + (index * 500));
+                });
+            }, 1000);
+            document.addEventListener('submit', function (e) {
+                const form = e.target;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.classList.contains('no-loading')) {
+                    submitBtn.classList.add('loading');
+                    // Store original width to prevent resizing
+                    submitBtn.style.width = getComputedStyle(submitBtn).width;
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+</body>
+
+</html>

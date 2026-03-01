@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}Login - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 480px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow);
+        animation: slideUp 0.8s ease forwards;
+        border: 1px solid var(--border-color);
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .form-subtitle {
+        text-align: center;
+        color: var(--gray-color);
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 18px;
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        font-size: 15px;
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+    }
+
+    .form-control::placeholder {
+        color: var(--gray-color);
+    }
+
+    .form-footer {
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .form-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .form-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .login-icon {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .login-icon i {
+        font-size: 70px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .login-tabs {
+        display: flex;
+        margin-bottom: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--body-bg);
+        padding: 5px;
+    }
+
+    .login-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--gray-color);
+        transition: var(--transition);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .login-tab.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    }
+
+    .login-tab:hover:not(.active) {
+        background: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .password-field {
+        display: block;
+    }
+
+    .password-field.hidden {
+        display: none;
+    }
+
+    .input-hint {
+        font-size: 0.8rem;
+        color: var(--gray-color);
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .input-hint i {
+        color: var(--warning-color);
+    }
+
+    .forgot-link {
+        display: block;
+        text-align: right;
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .forgot-link:hover {
+        text-decoration: underline;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        margin-top: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+    }
+
+    /* Social Login Styles */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 30px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider span {
+        padding: 0 15px;
+        color: var(--gray-color);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .social-login {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .social-btn {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 12px;
+        border: 2px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-color);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-decoration: none;
+    }
+
+    .social-btn:hover {
+        border-color: var(--primary-color);
+        background: rgba(67, 97, 238, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .social-btn.google {
+        border-color: #ea4335;
+    }
+
+    .social-btn.google:hover {
+        background: rgba(234, 67, 53, 0.05);
+    }
+
+    .social-btn img {
+        width: 22px;
+        height: 22px;
+    }
+
+    .google-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .password-toggle {
+        position: relative;
+    }
+
+    .password-toggle input {
+        padding-right: 50px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-color);
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 32px 20px;
+            margin: 0 10px;
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+        }
+
+        .login-tabs {
+            margin-bottom: 20px;
+        }
+
+        .login-tab {
+            padding: 10px;
+            font-size: 13px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="login-icon">
+        <i class="fas fa-graduation-cap"></i>
+    </div>
+    <h2 class="form-title">Welcome Back!</h2>
+    <p class="form-subtitle">Sign in to access your notes and resources</p>
+
+    <!-- Social Login (only if Google is configured) -->
+    {% if google_enabled %}
+    <div class="social-login">
+        <a href="{{ url_for('google_login') }}" class="social-btn google">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Sign in with Google
+        </a>
+    </div>
+
+    <div class="divider">
+        <span>or sign in with email</span>
+    </div>
+    {% endif %}
+
+    <!-- Role Switcher -->
+    <div class="role-switcher"
+        style="display: flex; gap: 10px; margin-bottom: 20px; background: var(--body-bg); padding: 5px; border-radius: 12px;">
+        <button type="button" class="role-btn active" id="studentRole" onclick="switchRole('student')"
+            style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: var(--primary-color); color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            Student
+        </button>
+        <button type="button" class="role-btn" id="professorRole" onclick="switchRole('professor')"
+            style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; color: var(--gray-color); font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            Professor
+        </button>
+    </div>
+
+    <div class="login-tabs">
+        <button type="button" class="login-tab active" id="passwordTab" onclick="switchTab('password')">
+            <i class="fas fa-lock"></i> Password
+        </button>
+        <button type="button" class="login-tab" id="otpTab" onclick="switchTab('otp')">
+            <i class="fas fa-mobile-alt"></i> OTP
+        </button>
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="login_method" id="loginMethod" value="password">
+
+        <div class="form-group">
+            <label for="login_id" id="loginIdLabel">Enrollment No. / Email / Mobile</label>
+            <input type="text" id="login_id" name="login_id" class="form-control"
+                placeholder="Enter enrollment number, email or mobile" required autocomplete="username">
+            <div class="input-hint" id="loginIdHint">
+                <i class="fas fa-lightbulb"></i>
+                <span id="loginIdHintText">Enter your enrollment number, email, or mobile</span>
+            </div>
+        </div>
+
+        <div class="form-group password-field" id="passwordField">
+            <label for="password">Password</label>
+            <div class="password-toggle">
+                <input type="password" id="password" name="password" class="form-control"
+                    placeholder="Enter your password" autocomplete="current-password">
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                </button>
+            </div>
+            <a href="{{ url_for('forgot_password') }}" class="forgot-link">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">
+            <i class="fas fa-sign-in-alt"></i> <span id="submitText">Login</span>
+        </button>
+    </form>
+
+    <div class="form-footer">
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Create Account</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchRole(role) {
+        const studentBtn = document.getElementById('studentRole');
+        const professorBtn = document.getElementById('professorRole');
+        const label = document.getElementById('loginIdLabel');
+        const input = document.getElementById('login_id');
+        const hintText = document.getElementById('loginIdHintText');
+
+        if (role === 'student') {
+            studentBtn.classList.add('active');
+            studentBtn.style.background = 'var(--primary-color)';
+            studentBtn.style.color = 'white';
+
+            professorBtn.classList.remove('active');
+            professorBtn.style.background = 'transparent';
+            professorBtn.style.color = 'var(--gray-color)';
+
+            label.textContent = 'Enrollment No. / Email / Mobile';
+            input.placeholder = 'Enter enrollment number, email or mobile';
+            hintText.textContent = 'Enter your enrollment number, email, or mobile';
+        } else {
+            professorBtn.classList.add('active');
+            professorBtn.style.background = 'var(--primary-color)';
+            professorBtn.style.color = 'white';
+
+            studentBtn.classList.remove('active');
+            studentBtn.style.background = 'transparent';
+            studentBtn.style.color = 'var(--gray-color)';
+
+            label.textContent = 'Email / Mobile';
+            input.placeholder = 'Enter email or mobile number';
+            hintText.textContent = 'Enter your registered email or mobile';
+        }
+    }
+
+    function switchTab(method) {
+        const passwordTab = document.getElementById('passwordTab');
+        const otpTab = document.getElementById('otpTab');
+        const passwordField = document.getElementById('passwordField');
+        const loginMethod = document.getElementById('loginMethod');
+        const submitText = document.getElementById('submitText');
+        const passwordInput = document.getElementById('password');
+
+        if (method === 'password') {
+            passwordTab.classList.add('active');
+            otpTab.classList.remove('active');
+            passwordField.classList.remove('hidden');
+            loginMethod.value = 'password';
+            submitText.textContent = 'Sign In';
+            passwordInput.required = true;
+        } else {
+            otpTab.classList.add('active');
+            passwordTab.classList.remove('active');
+            passwordField.classList.add('hidden');
+            loginMethod.value = 'otp';
+            submitText.textContent = 'Send OTP';
+            passwordInput.required = false;
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

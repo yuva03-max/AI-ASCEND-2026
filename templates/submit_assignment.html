@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Assignment - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .submission-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+
+    .assignment-info {
+        background: rgba(var(--primary-rgb), 0.05);
+        padding: 32px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .submission-form {
+        padding: 32px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-body);
+        color: var(--text-main);
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+    }
+
+    .file-drop {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .file-drop:hover {
+        border-color: var(--primary);
+        background: rgba(var(--primary-rgb), 0.05);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 100px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background: rgba(var(--primary-rgb), 0.1);
+        color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+
+        .assignment-info,
+        .submission-form {
+            padding: 24px 20px;
+        }
+
+        .assignment-info h2 {
+            font-size: 1.25rem;
+        }
+
+        .assignment-info>div {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-badge {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .file-drop {
+            padding: 30px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 40px;">
+    <a href="{{ url_for('list_assignments') }}" class="btn btn-ghost btn-sm" style="margin-bottom: 16px;">
+        <i class="fas fa-arrow-left"></i> Back to Assignments
+    </a>
+    <h1 class="dashboard-title">Submit Work</h1>
+</div>
+
+<div class="submission-card">
+    <div class="assignment-info">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h2 style="margin: 0; color: var(--text-main);">{{ assignment.title }}</h2>
+            <div class="status-badge">
+                <i class="fas fa-clock"></i>
+                Due: {{ assignment.deadline.strftime('%b %d, %Y') if assignment.deadline else 'No Deadline' }}
+            </div>
+        </div>
+        <p class="text-muted">{{ assignment.description or 'No description provided.' }}</p>
+    </div>
+
+    <div class="submission-form">
+        <form action="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" method="POST"
+            enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="submission_text">Submission Notes (Optional)</label>
+                <textarea name="submission_text" id="submission_text" rows="5" class="form-control"
+                    placeholder="Add any comments or notes for your professor...">{{ submission.submission_text if submission else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Upload File (PDF, ZIP, etc.)</label>
+                <div class="file-drop" onclick="document.getElementById('file').click()">
+                    <i class="fas fa-file-export"
+                        style="font-size: 32px; color: var(--primary); margin-bottom: 12px; display: block;"></i>
+                    <p id="file-name" style="margin: 0; font-weight: 500;">
+                        {% if submission and submission.filename %}
+                        Change file: {{ submission.filename.split('_')[-1] }}
+                        {% else %}
+                        Click to select your work file
+                        {% endif %}
+                    </p>
+                    <input type="file" name="file" id="file" style="display: none;" onchange="updateFileName(this)">
+                </div>
+            </div>
+
+            <div style="margin-top: 32px; display: flex; gap: 16px;">
+                <button type="submit" class="btn btn-primary" style="flex: 2; justify-content: center;">
+                    <i class="fas fa-check-double"></i>
+                    {{ 'Update Submission' if submission else 'Submit Assignment' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const fileName = input.files[0] ? input.files[0].name : 'Click to select your work file';
+        document.getElementById('file-name').innerText = fileName;
+    }
+</script>
+{% endblock %}

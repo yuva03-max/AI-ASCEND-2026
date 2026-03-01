@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .admin-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .users-table-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .users-table th {
+        font-weight: 600;
+        color: var(--gray-color);
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .user-details h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .user-details p {
+        font-size: 12px;
+        color: var(--gray-color);
+    }
+
+    .role-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .role-badge.student {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .role-badge.professor {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .role-badge.admin {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .role-select {
+        padding: 8px 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--body-bg);
+        color: var(--text-color);
+        font-size: 13px;
+    }
+
+    .date-text {
+        font-size: 13px;
+        color: var(--gray-color);
+    }
+
+    @media (max-width: 768px) {
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .admin-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .users-table-container {
+            padding: 15px;
+            margin: 0 -20px;
+            border-radius: 0;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 10px;
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1><i class="fas fa-users-cog" style="color: var(--primary-color);"></i> Manage Users</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="users-table-container">
+    <table class="users-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Enrolled</th>
+                <th>Joined</th>
+                <th>Change Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr id="user-{{ user.id }}">
+                <td>
+                    <div class="user-info">
+                        <div class="user-avatar">{{ (user.username[0] if user.username else '?') | upper }}</div>
+                        <div class="user-details">
+                            <h4>{{ user.username or 'Unknown' }}</h4>
+                            <p>{{ user.email or 'No Email' }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="role-badge {{ user.role }}" id="badge-{{ user.id }}">{{ user.role }}</span>
+                </td>
+                <td>{{ user.enrollment_number or '-' }}</td>
+                <td class="date-text">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'No Date' }}</td>
+                <td>
+                    <select class="role-select" onchange="changeRole(this.dataset.userId, this.value)"
+                        id="select-{{ user.id }}" data-user-id="{{ user.id }}">
+                        <option value="student" {% if user.role=='student' %}selected{% endif %}>Student</option>
+                        <option value="professor" {% if user.role=='professor' %}selected{% endif %}>Professor</option>
+                        <option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    async function changeRole(userId, newRole) {
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            const response = await fetch(`/admin/user/${userId}/role`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                const badge = document.getElementById(`badge-${userId}`);
+                badge.textContent = newRole;
+                badge.className = `role-badge ${newRole}`;
+            } else {
+                alert('Failed to update role');
+                location.reload();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating role');
+        }
+    }
+</script>
+{% endblock %}

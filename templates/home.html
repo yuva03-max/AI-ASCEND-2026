@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        text-align: center;
+        padding: 60px 0;
+        max-width: 800px;
+        margin: 0 auto;
+        perspective: 1000px;
+        /* Essential for 3D */
+    }
+
+    /* 3D Book Animation */
+    .book-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 50px;
+    }
+
+    .book {
+        width: 200px;
+        height: 300px;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateY(-30deg) rotateX(10deg);
+        transition: transform 1s ease;
+        animation: floatBook 3s ease-in-out infinite alternate;
+    }
+
+    .book:hover {
+        transform: rotateY(0deg) rotateX(0deg) scale(1.1);
+    }
+
+    .book>div {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .cover {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        transform: translateZ(25px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: white;
+        box-shadow: inset 3px 0px 20px rgba(0, 0, 0, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cover::before {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 100%;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .cover::after {
+        content: 'CollegeNotes';
+        position: absolute;
+        bottom: 20px;
+        font-size: 10px;
+        opacity: 0.7;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .back-cover {
+        background: var(--primary-dark);
+        transform: translateZ(-25px) rotateY(180deg);
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .spine {
+        width: 50px;
+        height: 100%;
+        background: var(--primary-dark);
+        transform: rotateY(-90deg) translateZ(25px);
+        position: absolute;
+        left: -25px;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .pages {
+        width: 196px;
+        height: 290px;
+        background: #fff;
+        transform: rotateY(-90deg) translateZ(23px);
+        position: absolute;
+        left: 0;
+        background: linear-gradient(90deg, #fff 90%, #ddd 100%);
+    }
+
+    .pages-right {
+        width: 50px;
+        height: 290px;
+        background: #fff;
+        transform: rotateY(0deg) translateZ(23px);
+        position: absolute;
+        right: -25px;
+        top: 5px;
+        transform: rotateY(90deg) translateZ(98px);
+        background: repeating-linear-gradient(to bottom, #fff 0px, #fff 4px, #eee 5px, #eee 5px);
+    }
+
+    @keyframes floatBook {
+        0% {
+            transform: rotateY(-30deg) rotateX(10deg) translateY(0);
+        }
+
+        100% {
+            transform: rotateY(-30deg) rotateX(10deg) translateY(-20px);
+        }
+    }
+
+    /* Hero Styling */
+    .hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1;
+        margin-bottom: 24px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: slideUp 0.8s ease forwards;
+        margin-top: 40px;
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1;
+        margin-bottom: 24px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: slideUp 0.8s ease forwards;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        margin-bottom: 40px;
+        line-height: 1.6;
+        animation: slideUp 0.8s ease 0.2s forwards;
+    }
+
+    .role-selector {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 48px;
+    }
+
+    .role-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 48px 32px;
+        width: 320px;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .role-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .role-card i {
+        font-size: 48px;
+        color: var(--primary);
+        background: rgba(var(--primary-rgb), 0.1);
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 20px;
+    }
+
+    .role-card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .role-card p {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+        margin-top: 100px;
+        padding-bottom: 80px;
+    }
+
+    .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary);
+    }
+
+    .feature-card i {
+        font-size: 32px;
+        color: var(--primary);
+        margin-bottom: 24px;
+    }
+
+    .feature-card h4 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .feature-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 40px 16px;
+        }
+
+        .book {
+            width: 150px;
+            height: 225px;
+        }
+
+        .pages {
+            width: 146px;
+            height: 215px;
+        }
+
+        .pages-right {
+            height: 215px;
+            transform: rotateY(90deg) translateZ(73px);
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-top: 20px;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            margin-bottom: 30px;
+        }
+
+        .role-selector {
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .role-card {
+            width: 100%;
+            padding: 32px 24px;
+        }
+
+        .features {
+            margin-top: 60px;
+            gap: 20px;
+        }
+
+        .feature-card {
+            padding: 30px 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="book-container">
+        <div class="book">
+            <div class="cover">
+                <i class="fas fa-graduation-cap" style="font-size: 60px;"></i>
+                <h3 style="margin-top:10px;">Notes</h3>
+                <p style="font-size:0.8rem;">Portal</p>
+            </div>
+            <div class="spine"></div>
+            <div class="back-cover"></div>
+            <div class="pages-right"></div>
+        </div>
+    </div>
+    <h1>College Notes Portal</h1>
+    <p>Streamline your academic experience with seamless note sharing between professors and students. Access course
+        materials anytime, anywhere.</p>
+
+    <div class="role-selector">
+        <a href="{{ url_for('register') }}?role=student" class="role-card" data-tilt data-tilt-max="15"
+            data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
+            <i class="fas fa-user-graduate"></i>
+            <h3>Student</h3>
+            <p>Access and download notes from your professors</p>
+            <span class="btn btn-primary">Get Started</span>
+        </a>
+        <a href="{{ url_for('register') }}?role=professor" class="role-card" data-tilt data-tilt-max="15"
+            data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.2">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <h3>Professor</h3>
+            <p>Upload and manage course notes for your students</p>
+            <span class="btn btn-primary">Get Started</span>
+        </a>
+    </div>
+</div>
+
+<div class="features">
+    <div class="feature-card" data-tilt data-tilt-max="10" data-tilt-scale="1.05">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h4>Easy Upload</h4>
+        <p>Professors can quickly upload notes in various formats including PDF, DOC, PPT, and more.</p>
+    </div>
+    <div class="feature-card" data-tilt data-tilt-max="10" data-tilt-scale="1.05">
+        <i class="fas fa-download"></i>
+        <h4>Quick Download</h4>
+        <p>Students can instantly download course materials and study resources.</p>
+    </div>
+    <div class="feature-card" data-tilt data-tilt-max="10" data-tilt-scale="1.05">
+        <i class="fas fa-search"></i>
+        <h4>Smart Search</h4>
+        <p>Find notes easily by subject, semester, or keyword search.</p>
+    </div>
+    <div class="feature-card" data-tilt data-tilt-max="10" data-tilt-scale="1.05">
+        <i class="fas fa-shield-alt"></i>
+        <h4>Secure Access</h4>
+        <p>Role-based access ensures only authorized users can view and manage content.</p>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    // Initialize VanillaTilt manually to ensure it picks up dynamically added elements if any, though HTML attributes usually suffice.
+    // The data-tilt attributes in the HTML will automatically trigger the effect.
+</script>
+{% endblock %}

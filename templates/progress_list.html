@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Progress Reports - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    .report-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .report-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+
+    .report-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .report-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .report-meta i {
+        color: var(--primary);
+        width: 16px;
+    }
+
+    .report-description {
+        color: var(--text-main);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .report-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .badge {
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .badge-primary {
+        background: rgba(var(--primary-rgb), 0.1);
+        color: var(--primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--border);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header-actions,
+        .header-actions .btn {
+            width: 100%;
+        }
+
+        .progress-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .report-card {
+            padding: 20px 16px;
+        }
+
+        .report-title {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header"
+    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; gap: 20px; flex-wrap: wrap;">
+    <div>
+        <h1 class="dashboard-title" style="margin: 0;">Progress Reports</h1>
+        <p class="text-muted" style="margin: 4px 0 0 0;">
+            {% if current_user.role == 'professor' %}
+            Reports you've uploaded for your students.
+            {% else %}
+            Your academic performance and progress tracking.
+            {% endif %}
+        </p>
+    </div>
+    {% if current_user.role == 'professor' %}
+    <div class="header-actions">
+        <a href="{{ url_for('upload_progress') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Upload New Report
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if reports %}
+<div class="progress-grid">
+    {% for report in reports %}
+    <div class="report-card">
+        <div class="report-header">
+            <div>
+                <h3 class="report-title">{{ report.title }}</h3>
+                <div class="report-meta">
+                    <span><i class="fas fa-user"></i>
+                        {% if current_user.role == 'professor' %}
+                        Student: {{ report.student.username }}
+                        {% else %}
+                        From: Prof. {{ report.professor.username }}
+                        {% endif %}
+                    </span>
+                    <span><i class="fas fa-calendar"></i> {{ report.created_at.strftime('%b %d, %Y') if
+                        report.created_at else 'No Date' }}</span>
+                    {% if report.semester %}
+                    <span><i class="fas fa-book-open"></i> Semester {{ report.semester }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <span class="badge badge-primary">Report</span>
+        </div>
+
+        {% if report.description %}
+        <p class="report-description">{{ report.description }}</p>
+        {% endif %}
+
+        <div class="report-footer">
+            {% if report.filename %}
+            <a href="{{ url_for('view_progress_file', report_id=report.id) }}" class="btn btn-outline btn-sm"
+                target="_blank">
+                <i class="fas fa-file-download"></i> View Document
+            </a>
+            {% else %}
+            <span class="text-muted small">No document attached</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-chart-line"></i>
+    <h3>No Progress Reports Yet</h3>
+    <p class="text-muted">
+        {% if current_user.role == 'professor' %}
+        Start by uploading a progress report for one of your students.
+        {% else %}
+        Your professors haven't uploaded any progress reports for you yet.
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endblock %}

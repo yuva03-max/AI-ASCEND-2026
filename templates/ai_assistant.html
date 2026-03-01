@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+
+{% block title %}AI Study Assistant - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .ai-container {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .ai-card {
+            padding: 16px;
+        }
+
+        .chat-box {
+            height: 350px;
+            /* Taller on mobile for better visibility */
+        }
+    }
+
+    .ai-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: var(--shadow);
+    }
+
+    .ai-card h3 {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ai-card h3 i {
+        color: var(--primary-color);
+    }
+
+    .chat-box {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: var(--body-bg);
+    }
+
+    .chat-message {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border-radius: 12px;
+        max-width: 85%;
+    }
+
+    .chat-message.user {
+        background: var(--primary-color);
+        color: white;
+        margin-left: auto;
+    }
+
+    .chat-message.ai {
+        background: var(--light-color);
+        color: var(--text-color);
+    }
+
+    .input-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .input-group input,
+    .input-group select {
+        flex: 1;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--body-bg);
+        color: var(--text-color);
+    }
+
+    .quiz-container,
+    .flashcard-container {
+        min-height: 200px;
+    }
+
+    .quiz-question {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: var(--body-bg);
+        border-radius: 8px;
+    }
+
+    .quiz-question h4 {
+        margin-bottom: 15px;
+    }
+
+    .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .quiz-option {
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .quiz-option:hover {
+        border-color: var(--primary-color);
+    }
+
+    .quiz-option.correct {
+        background: #d1fae5;
+        border-color: var(--success-color);
+    }
+
+    .quiz-option.incorrect {
+        background: #fee2e2;
+        border-color: var(--danger-color);
+    }
+
+    .flashcard {
+        perspective: 1000px;
+        height: 200px;
+        cursor: pointer;
+    }
+
+    .flashcard-inner {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .flashcard.flipped .flashcard-inner {
+        transform: rotateY(180deg);
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .flashcard-front {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .flashcard-back {
+        background: var(--success-color);
+        color: white;
+        transform: rotateY(180deg);
+    }
+
+    .flashcard-nav {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .loading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--gray-color);
+    }
+
+    .loading i {
+        animation: spin 1s linear infinite;
+    }
+
+    .explanation-box {
+        margin-top: 15px;
+        padding: 15px;
+        background: #eff6ff;
+        border-left: 4px solid var(--primary-color);
+        border-radius: 4px;
+        display: none;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 30px;"><i class="fas fa-robot" style="color: var(--primary-color);"></i> AI Study Assistant
+</h1>
+
+<div class="ai-container">
+    <div class="ai-card">
+        <h3><i class="fas fa-comments"></i> Ask Questions</h3>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-group">
+            <input type="text" id="questionInput" placeholder="Ask anything about your studies..."
+                onkeypress="if(event.key==='Enter')askQuestion()">
+            <button class="btn btn-primary" onclick="askQuestion()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div class="ai-card">
+        <h3><i class="fas fa-question-circle"></i> Quiz Generator</h3>
+        <div class="input-group" style="margin-bottom: 10px;">
+            <input type="text" id="quizTopic" placeholder="Enter topic for quiz...">
+            <select id="quizSubjectSelect" onchange="document.getElementById('quizTopic').value = this.value">
+                <option value="">Select Subject...</option>
+                {% for sub in subjects %}
+                <option value="{{ sub }}">{{ sub }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-group" style="margin-bottom: 15px;">
+            <select id="quizCount">
+                <option value="3">3 Questions</option>
+                <option value="5" selected>5 Questions</option>
+                <option value="10">10 Questions</option>
+            </select>
+            <button class="btn btn-primary" onclick="generateQuiz()"><i class="fas fa-magic"></i> Generate</button>
+        </div>
+        <div class="quiz-container" id="quizContainer">
+            <p style="color: var(--gray-color); text-align: center;">Enter a topic and generate a quiz!</p>
+        </div>
+    </div>
+
+    <div class="ai-card" style="grid-column: span 2;">
+        <h3><i class="fas fa-tasks"></i> Targeted MCQ Practice</h3>
+        <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--gray-color);">Generate a single, high-quality
+            question with a detailed explanation to deepen your understanding.</p>
+        <div class="input-group" style="margin-bottom: 10px;">
+            <input type="text" id="mcqTopic" placeholder="Enter topic for targeted practice...">
+            <select onchange="document.getElementById('mcqTopic').value = this.value">
+                <option value="">Quick Select Subject...</option>
+                {% for sub in subjects %}
+                <option value="{{ sub }}">{{ sub }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <select id="mcqDifficulty">
+                <option value="Easy">Beginner</option>
+                <option value="Medium" selected>Intermediate</option>
+                <option value="Hard">Expert</option>
+            </select>
+            <button class="btn btn-primary" onclick="generateMCQ()"><i class="fas fa-brain"></i> Practice</button>
+        </div>
+        <div id="mcqContainer">
+            <p style="color: var(--gray-color); text-align: center;">Enter a topic to challenge yourself!</p>
+        </div>
+    </div>
+
+    <div class="ai-card" style="grid-column: span 2;">
+        <h3><i class="fas fa-clone"></i> Flashcards</h3>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <input type="text" id="flashcardTopic" placeholder="Enter topic for flashcards...">
+            <button class="btn btn-primary" onclick="generateFlashcards()"><i class="fas fa-magic"></i>
+                Generate</button>
+        </div>
+        <div class="flashcard-container" id="flashcardContainer">
+            <p style="color: var(--gray-color); text-align: center;">Generate flashcards to study!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let flashcards = [];
+    let currentCard = 0;
+
+    function addMessage(text, isUser) {
+        const chatBox = document.getElementById('chatBox');
+        const msg = document.createElement('div');
+        msg.className = 'chat-message ' + (isUser ? 'user' : 'ai');
+        msg.textContent = text;
+        chatBox.appendChild(msg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function askQuestion() {
+        const input = document.getElementById('questionInput');
+        const question = input.value.trim();
+        if (!question) return;
+
+        addMessage(question, true);
+        input.value = '';
+
+        const chatBox = document.getElementById('chatBox');
+        const loading = document.createElement('div');
+        loading.className = 'loading';
+        loading.innerHTML = '<i class="fas fa-spinner"></i> Thinking...';
+        chatBox.appendChild(loading);
+
+        try {
+            const response = await fetch('/api/ai/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ question })
+            });
+            const data = await response.json();
+            loading.remove();
+            addMessage(data.answer || data.error || 'Error', false);
+        } catch (e) {
+            loading.remove();
+            addMessage('Error connecting to AI.', false);
+        }
+    }
+
+    async function generateQuiz() {
+        const topic = document.getElementById('quizTopic').value.trim();
+        const count = document.getElementById('quizCount').value;
+        if (!topic) return alert('Enter a topic!');
+
+        const container = document.getElementById('quizContainer');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i> Generating quiz...</div>';
+
+        try {
+            const response = await fetch('/api/ai/quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ topic, num_questions: parseInt(count) })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                container.innerHTML = '<p style="color: var(--danger-color);">' + data.error + '</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            (data.questions || []).forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-question';
+                div.innerHTML = '<h4>Q' + (i + 1) + ': ' + q.question + '</h4><div class="quiz-options">' +
+                    q.options.map((opt, j) => '<div class="quiz-option" onclick="checkAnswer(this,' + j + ',' + q.correct + ')">' + opt + '</div>').join('') +
+                    '</div>';
+                container.appendChild(div);
+            });
+        } catch (e) {
+            container.innerHTML = '<p style="color: var(--danger-color);">Error generating quiz.</p>';
+        }
+    }
+
+    function checkAnswer(el, selected, correct) {
+        const options = el.parentElement.querySelectorAll('.quiz-option');
+        options.forEach((opt, i) => {
+            opt.onclick = null;
+            if (i === correct) opt.classList.add('correct');
+            else if (i === selected) opt.classList.add('incorrect');
+        });
+    }
+
+    async function generateMCQ() {
+        const topic = document.getElementById('mcqTopic').value.trim();
+        const difficulty = document.getElementById('mcqDifficulty').value;
+        if (!topic) return alert('Enter a topic!');
+
+        const container = document.getElementById('mcqContainer');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i> Formulating question...</div>';
+
+        try {
+            const response = await fetch('/api/ai/mcq', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ topic, difficulty })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                container.innerHTML = '<p style="color: var(--danger-color);">' + data.error + '</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="quiz-question" style="margin-bottom: 0;">
+                    <h4>${data.question}</h4>
+                    <div class="quiz-options">
+                        ${data.options.map((opt, j) => `
+                            <div class="quiz-option" onclick="checkMcqAnswer(this, ${j}, ${data.correct})">${opt}</div>
+                        `).join('')}
+                    </div>
+                    <div id="mcqExplanation" class="explanation-box">
+                        <strong><i class="fas fa-info-circle"></i> Explanation:</strong>
+                        <p style="margin-top: 10px;">${data.explanation}</p>
+                    </div>
+                </div>
+            `;
+        } catch (e) {
+            container.innerHTML = '<p style="color: var(--danger-color);">Error generating question.</p>';
+        }
+    }
+
+    function checkMcqAnswer(el, selected, correct) {
+        const options = el.parentElement.querySelectorAll('.quiz-option');
+        options.forEach((opt, i) => {
+            opt.onclick = null;
+            if (i === correct) opt.classList.add('correct');
+            else if (i === selected) opt.classList.add('incorrect');
+        });
+
+        const explanation = document.getElementById('mcqExplanation');
+        if (explanation) explanation.style.display = 'block';
+    }
+
+    async function generateFlashcards() {
+        const topic = document.getElementById('flashcardTopic').value.trim();
+        if (!topic) return alert('Enter a topic!');
+
+        const container = document.getElementById('flashcardContainer');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i> Generating flashcards...</div>';
+
+        try {
+            const response = await fetch('/api/ai/flashcards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ topic })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                container.innerHTML = '<p style="color: var(--danger-color);">' + data.error + '</p>';
+                return;
+            }
+
+            flashcards = data.flashcards || [];
+            currentCard = 0;
+            showFlashcard();
+        } catch (e) {
+            container.innerHTML = '<p style="color: var(--danger-color);">Error generating flashcards.</p>';
+        }
+    }
+
+    function showFlashcard() {
+        if (!flashcards.length) return;
+        const container = document.getElementById('flashcardContainer');
+        const card = flashcards[currentCard];
+        container.innerHTML = `
+            <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front"><h3>${card.front}</h3></div>
+                    <div class="flashcard-back"><h3>${card.back}</h3></div>
+                </div>
+            </div>
+            <div class="flashcard-nav">
+                <button class="btn btn-secondary" onclick="prevCard()"><i class="fas fa-chevron-left"></i> Previous</button>
+                <span>${currentCard + 1} / ${flashcards.length}</span>
+                <button class="btn btn-secondary" onclick="nextCard()">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        `;
+    }
+
+    function prevCard() {
+        currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+        showFlashcard();
+    }
+
+    function nextCard() {
+        currentCard = (currentCard + 1) % flashcards.length;
+        showFlashcard();
+    }
+</script>
+{% endblock %}

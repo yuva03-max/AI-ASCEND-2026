@@ -1,0 +1,791 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        --hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Main Container */
+    .settings-wrapper {
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .settings-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .settings-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+
+    .settings-header p {
+        color: var(--gray-color);
+        font-size: 1.1rem;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+        transition: all 0.3s;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 30px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s;
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-upload-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        border: 3px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .avatar-upload-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .avatar-upload-btn i {
+        color: white;
+        font-size: 16px;
+    }
+
+    .profile-info h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: var(--text-color);
+    }
+
+    .profile-info .user-role {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .profile-info .user-email {
+        color: var(--gray-color);
+        margin-top: 8px;
+        font-size: 0.95rem;
+    }
+
+    /* Settings Grid */
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .setting-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .setting-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-gradient);
+        transform: scaleY(0);
+        transition: transform 0.3s;
+    }
+
+    .setting-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .setting-card:hover::before {
+        transform: scaleY(1);
+    }
+
+    .setting-card-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .setting-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .setting-card-header h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .setting-card-header p {
+        color: var(--gray-color);
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 2px solid #e8e8e8;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* Switch Toggle */
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-item-label {
+        flex: 1;
+    }
+
+    .setting-item-label h5 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+        color: var(--text-color);
+    }
+
+    .setting-item-label p {
+        font-size: 0.8rem;
+        color: var(--gray-color);
+        margin: 0;
+    }
+
+    /* Modern Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.3s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+        background: var(--primary-gradient);
+    }
+
+    .toggle-switch input:checked+.toggle-slider:before {
+        transform: translateX(24px);
+    }
+
+    /* Buttons */
+    .btn-gradient {
+        padding: 12px 30px;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        font-size: 0.95rem;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-outline-gradient {
+        padding: 12px 30px;
+        border-radius: 10px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .btn-outline-gradient:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger-gradient {
+        padding: 12px 30px;
+        border-radius: 10px;
+        background: var(--danger-gradient);
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(235, 51, 73, 0.3);
+        font-size: 0.95rem;
+    }
+
+    .btn-danger-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(235, 51, 73, 0.4);
+    }
+
+    /* Stats Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-color);
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .settings-header {
+            margin-bottom: 30px;
+        }
+
+        .settings-header h1 {
+            font-size: 2rem;
+        }
+
+        .profile-card {
+            padding: 24px 20px;
+        }
+
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+        }
+
+        .settings-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .setting-card {
+            padding: 24px 20px;
+        }
+
+        .stats-row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-wrapper">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="settings-header">
+            <h1><i class="fas fa-cog me-2"></i>Settings</h1>
+            <p>Manage your account preferences and settings</p>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar-wrapper">
+                    <img src="{{ user.profile_picture_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=667eea&color=fff&size=120' }}"
+                        alt="Profile" class="profile-avatar" id="profilePreview">
+                    <label for="profilePicInput" class="avatar-upload-btn">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="profilePicInput" class="d-none" accept="image/*"
+                        onchange="previewProfilePic(this)">
+                </div>
+                <div class="profile-info">
+                    <h2>{{ user.username }}</h2>
+                    <span class="user-role">{{ user.role }}</span>
+                    <p class="user-email"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-value">{{ total_notes or 0 }}</div>
+                    <div class="stat-label">Notes Uploaded</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--success-gradient);">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="stat-value">{{ bookmarks|length or 0 }}</div>
+                    <div class="stat-label">Bookmarks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--info-gradient);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value">{{ login_history|length or 0 }}</div>
+                    <div class="stat-label">Login Sessions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="settings-grid">
+
+            <!-- Personal Information -->
+            <div class="setting-card">
+                <div class="setting-card-header">
+                    <div class="setting-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h3>Personal Info</h3>
+                        <p>Update your details</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('update_account_settings') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="file" name="profile_picture" id="hiddenFileInput" class="d-none">
+
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}"
+                            placeholder="+91 9876543210">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea name="bio" class="form-control"
+                            placeholder="Tell us about yourself...">{{ user.bio or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-gradient w-100">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Academic Settings -->
+            <div class="setting-card">
+                <div class="setting-card-header">
+                    <div class="setting-icon" style="background: var(--success-gradient);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h3>Academic Info</h3>
+                        <p>Educational details</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('update_academic_settings') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-group">
+                        <label class="form-label">University / College</label>
+                        <input type="text" name="college" class="form-control" value="{{ user.college or '' }}"
+                            placeholder="Enter your institution">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Course</label>
+                        <select name="course" class="form-select">
+                            <option value="">Select Course</option>
+                            <option value="B.Tech" {{ 'selected' if user.course=='B.Tech' }}>B.Tech</option>
+                            <option value="BCA" {{ 'selected' if user.course=='BCA' }}>BCA</option>
+                            <option value="B.Sc" {{ 'selected' if user.course=='B.Sc' }}>B.Sc</option>
+                            <option value="M.Tech" {{ 'selected' if user.course=='M.Tech' }}>M.Tech</option>
+                            <option value="MCA" {{ 'selected' if user.course=='MCA' }}>MCA</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Current Semester</label>
+                        <select name="semester" class="form-select">
+                            <option value="">Select Semester</option>
+                            {% for i in range(1, 9) %}
+                            <option value="Semester {{ i }}" {{ 'selected' if user.current_semester=='Semester ' +
+                                i|string }}>Semester {{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <input type="text" name="department" class="form-control" value="{{ user.department or '' }}"
+                            placeholder="e.g. Computer Science">
+                    </div>
+
+                    <button type="submit" class="btn-gradient w-100">
+                        <i class="fas fa-check me-2"></i>Update Info
+                    </button>
+                </form>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="setting-card">
+                <div class="setting-card-header">
+                    <div class="setting-icon" style="background: var(--danger-gradient);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h3>Security</h3>
+                        <p>Password & privacy</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('update_password') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="new_password" class="form-control" minlength="6" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="confirm_password" class="form-control" minlength="6" required>
+                    </div>
+
+                    <button type="submit" class="btn-danger-gradient w-100">
+                        <i class="fas fa-lock me-2"></i>Change Password
+                    </button>
+                </form>
+            </div>
+
+            <!-- Notifications -->
+            <div class="setting-card">
+                <div class="setting-card-header">
+                    <div class="setting-icon" style="background: var(--info-gradient);">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h3>Notifications</h3>
+                        <p>Email preferences</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('update_notification_settings') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="setting-item">
+                        <div class="setting-item-label">
+                            <h5>New Notes</h5>
+                            <p>Get notified about new notes in your subjects</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="email_new_notes" {{ 'checked' if prefs.email_new_notes }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-item-label">
+                            <h5>Assignments</h5>
+                            <p>Reminders for assignment deadlines</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="email_assignments" {{ 'checked' if prefs.email_assignments }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-item-label">
+                            <h5>Comments</h5>
+                            <p>Replies to your comments</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="email_comments" {{ 'checked' if prefs.email_comments }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-gradient w-100 mt-3">
+                        <i class="fas fa-save me-2"></i>Save Preferences
+                    </button>
+                </form>
+            </div>
+
+            <!-- Google Drive Integration -->
+            <div class="setting-card">
+                <div class="setting-card-header">
+                    <div class="setting-icon" style="background: #34A853;">
+                        <i class="fab fa-google-drive"></i>
+                    </div>
+                    <div>
+                        <h3>Google Drive Storage</h3>
+                        <p>Cloud Backup Status</p>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Active
+                    </div>
+                    <p class="mb-3 text-muted">Use the centralized Google Drive storage for seamless backups. All your
+                        future uploads will be automatically backed up to the secure cloud storage.</p>
+                </div>
+            </div>
+
+
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewProfilePic(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                document.getElementById('profilePreview').src = e.target.result;
+                // Also set the hidden file input for form submission
+                const dt = new DataTransfer();
+                dt.items.add(input.files[0]);
+                document.getElementById('hiddenFileInput').files = dt.files;
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

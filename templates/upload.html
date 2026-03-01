@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Note - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 24px;
+        font-size: 2rem;
+        color: var(--primary-color);
+        font-weight: 800;
+    }
+
+    .upload-card {
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        font-size: 16px;
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .file-upload {
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        padding: 50px;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+        background-color: var(--body-bg);
+    }
+
+    .file-upload:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .file-upload.dragover {
+        border-color: var(--primary-color);
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .file-upload i {
+        font-size: 60px;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+    }
+
+    .file-upload p {
+        color: var(--gray-color);
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    .file-upload .file-types {
+        font-size: 0.85rem;
+        color: var(--gray-color);
+    }
+
+    .file-upload input[type="file"] {
+        display: none;
+    }
+
+    .selected-file {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background-color: rgba(67, 97, 238, 0.1);
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .selected-file i {
+        font-size: 30px;
+        color: var(--primary-color);
+    }
+
+    .selected-file .file-info {
+        flex: 1;
+    }
+
+    .selected-file .file-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .selected-file .file-size {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+    }
+
+    .selected-file .remove-file {
+        cursor: pointer;
+        color: var(--danger-color);
+        font-size: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .upload-progress {
+        margin-top: 20px;
+        display: none;
+    }
+
+    .progress-bar {
+        height: 10px;
+        background: var(--border-color);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        width: 0%;
+        transition: width 0.3s;
+    }
+
+    .max-size-info {
+        background: rgba(67, 97, 238, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .max-size-info i {
+        color: var(--primary-color);
+        margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .upload-card {
+            padding: 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .file-upload {
+            padding: 30px 16px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <h1 class="page-title"><i class="fas fa-cloud-upload-alt"></i> Upload Note</h1>
+
+    <div class="upload-card">
+        <div class="max-size-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Maximum file size: 250MB</strong> - Supports PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, Images,
+            Videos, Audio, ZIP, and more.
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+                <label for="title">Subject *</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="Enter subject name"
+                    required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <select id="department" name="department" class="form-control">
+                        <option value="">Select Department</option>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="IT">IT</option>
+                        <option value="EEE">AI&DS</option>
+                        <option value="MECH">MECH</option>
+                        <option value="EEE">EEE</option>
+                        <option value="CIVIL">CIVIL</option>
+                        <option value="CHEMICAL">CSBS</option>
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject Code</label>
+                    <input type="text" id="subject" name="subject" class="form-control" placeholder="e.g., CS3492">
+                </div>
+                <div class="form-group">
+                    <label for="semester">Semester</label>
+                    <select id="semester" name="semester" class="form-control">
+                        <option value="">Select Semester</option>
+                        <option value="1st Semester">1st Semester</option>
+                        <option value="2nd Semester">2nd Semester</option>
+                        <option value="3rd Semester">3rd Semester</option>
+                        <option value="4th Semester">4th Semester</option>
+                        <option value="5th Semester">5th Semester</option>
+                        <option value="6th Semester">6th Semester</option>
+                        <option value="7th Semester">7th Semester</option>
+                        <option value="8th Semester">8th Semester</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" class="form-control"
+                    placeholder="Brief description of the note content..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Upload File * (Max 250MB)</label>
+                <div class="file-upload" id="fileUpload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag and drop your file here or click to browse</p>
+                    <span class="file-types">All document types, images, videos, audio files supported</span>
+                    <input type="file" id="file" name="file" required>
+                </div>
+                <div class="selected-file" id="selectedFile" style="display: none;">
+                    <i class="fas fa-file"></i>
+                    <div class="file-info">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                    <span class="remove-file" onclick="removeFile()"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p style="margin-top: 10px; text-align: center;"><span id="progressText">0%</span> uploaded</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="submitBtn">
+                <i class="fas fa-upload"></i> Upload Note
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const uploadForm = document.getElementById('uploadForm');
+    const fileUpload = document.getElementById('fileUpload');
+    const fileInput = document.getElementById('file');
+    const selectedFile = document.getElementById('selectedFile');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    // Max size: 250MB
+    const maxSize = 250 * 1024 * 1024;
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+    }
+
+    // File Type Helper
+    function getFileType(filename) {
+        return filename.split('.').pop().toLowerCase();
+    }
+
+    fileUpload.addEventListener('click', () => fileInput.click());
+    fileUpload.addEventListener('dragover', (e) => { e.preventDefault(); fileUpload.classList.add('dragover'); });
+    fileUpload.addEventListener('dragleave', () => fileUpload.classList.remove('dragover'));
+    fileUpload.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUpload.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            showSelectedFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) showSelectedFile(fileInput.files[0]);
+    });
+
+    function showSelectedFile(file) {
+        if (file.size > maxSize) {
+            alert('File size exceeds 250MB limit!');
+            fileInput.value = '';
+            return;
+        }
+        fileName.textContent = file.name;
+        fileSize.textContent = formatSize(file.size);
+        selectedFile.style.display = 'flex';
+        fileUpload.style.display = 'none';
+    }
+
+    function removeFile() {
+        fileInput.value = '';
+        selectedFile.style.display = 'none';
+        fileUpload.style.display = 'block';
+    }
+
+    // Handle Form Submission (Show loading state)
+    uploadForm.addEventListener('submit', function (e) {
+        if (fileInput.files.length > 0) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            if (uploadProgress) {
+                uploadProgress.style.display = 'block';
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                if (progressText) progressText.innerText = 'Uploading...';
+                if (progressFill) {
+                    progressFill.style.width = '100%';
+                    progressFill.classList.add('progress-bar-animated', 'progress-bar-striped');
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

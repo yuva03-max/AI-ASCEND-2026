@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        margin-bottom: 40px;
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        margin-bottom: 8px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 48px;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 32px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .stat-card i {
+        font-size: 32px;
+        color: var(--primary);
+        background: rgba(var(--primary-rgb), 0.1);
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+    }
+
+    .stat-card h3 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    .stat-card p {
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 32px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 32px;
+    }
+
+    .note-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        transition: var(--transition);
+        gap: 16px;
+    }
+
+    .note-item:hover {
+        border-color: var(--primary);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-md);
+    }
+
+    .note-info h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .note-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .note-meta i {
+        color: var(--primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--bg-body);
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header"
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; gap: 20px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 200px;">
+        <h1 class="dashboard-title" style="margin: 0;">Student Dashboard</h1>
+        <p class="text-muted" style="margin: 4px 0 0 0;">Welcome back, {{ username }}!</p>
+    </div>
+    <div class="header-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{{ url_for('list_meetings') }}" class="btn btn-outline btn-pill">
+            <i class="fas fa-video"></i> <span class="desktop-only">Join Meeting</span>
+        </a>
+        <a href="{{ url_for('list_progress') }}" class="btn btn-outline btn-pill">
+            <i class="fas fa-chart-line"></i> <span class="desktop-only">My Progress</span>
+        </a>
+        <a href="{{ url_for('list_notes') }}" class="btn btn-primary btn-pill">
+            <i class="fas fa-search"></i> <span class="desktop-only">Browse Notes</span>
+        </a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <i class="fas fa-file-alt"></i>
+        <h3>{{ total_notes }}</h3>
+        <p>Available Notes</p>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-tasks"></i>
+        <h3>{{ completed_assignments }}/{{ total_assignments }}</h3>
+        <p>Assignments Done</p>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-check-circle"></i>
+        <h3>{{ progress_percent }}%</h3>
+        <p>Your Progress</p>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-chart-line"></i>
+        <h3>Active</h3>
+        <p>Status</p>
+    </div>
+</div>
+
+<!-- Progress Monitoring Section -->
+<div class="grid-responsive" style="margin-top: 32px;">
+    <div class="card">
+        <h2 class="section-title">
+            <i class="fas fa-bullseye"></i> Goal Tracking
+        </h2>
+        <div style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-weight: 600;">Overall Completion</span>
+                <span style="color: var(--primary);">{{ progress_percent }}%</span>
+            </div>
+            <div style="height: 12px; background: var(--bg-body); border-radius: 100px; overflow: hidden;">
+                <div
+                    style="height: 100%; width: {{ progress_percent }}%; background: var(--primary); border-radius: 100px; transition: width 1s ease-in-out;">
+                </div>
+            </div>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 12px;">
+                You have completed {{ completed_assignments }} out of {{ total_assignments }} assignments. Keep it up!
+            </p>
+        </div>
+        <div style="margin-top: 24px;">
+            <a href="{{ url_for('list_assignments') }}" class="btn btn-outline"
+                style="width: 100%; justify-content: center;">
+                Go to Assignments
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">
+            <i class="fas fa-clipboard-check"></i> Latest Reports
+        </h2>
+        <div style="margin-top: 16px;">
+            {% if latest_reports %}
+            {% for report in latest_reports %}
+            <div
+                style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 600; font-size: 0.95rem;">{{ report.title }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Prof. {{ report.professor.username if
+                        report.professor else 'Unknown' }} •
+                        {{ report.created_at.strftime('%b %d') if report.created_at else 'No Date' }}</div>
+                </div>
+                <a href="{{ url_for('list_progress') }}" class="btn btn-ghost btn-sm" style="padding: 4px 8px;">View</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+                <i class="fas fa-info-circle" style="margin-bottom: 8px; display: block;"></i>
+                No reports yet
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="section-title">
+        <i class="fas fa-video"></i> Upcoming Meetings
+    </h2>
+    {% if upcoming_meetings %}
+    <div class="notes-list"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        {% for meeting in upcoming_meetings %}
+        <div class="note-item" style="flex-direction: column; align-items: flex-start;">
+            <div class="note-info">
+                <h4 style="color: var(--primary);">{{ meeting.title }}</h4>
+                <div class="note-meta" style="flex-direction: column; gap: 4px;">
+                    <span><i class="fas fa-book"></i> {{ meeting.subject or 'General' }}</span>
+                    <span><i class="fas fa-clock"></i> {{ meeting.start_time.strftime('%b %d, %H:%M') if
+                        meeting.start_time else 'No Time' }}</span>
+                    <span><i class="fas fa-user-tie"></i> Prof. {{ meeting.host.username if meeting.host else 'Unknown'
+                        }}</span>
+                </div>
+            </div>
+            <a href="{{ meeting.meeting_link }}" target="_blank" class="btn btn-primary btn-sm"
+                style="margin-top: 12px; width: 100%; justify-content: center;">
+                Join Meeting
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-video-slash"></i>
+        <p>No live sessions scheduled for now.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2 class="section-title">
+        <i class="fas fa-clock"></i> Recently Added Notes
+    </h2>
+    {% if recent_notes %}
+    <div class="notes-list">
+        {% for note in recent_notes %}
+        <div class="note-item">
+            <div class="note-info">
+                <h4>{{ note.title }}</h4>
+                <div class="note-meta">
+                    <span><i class="fas fa-book"></i> {{ note.subject or 'General' }}</span>
+                    <span><i class="fas fa-calendar"></i> {{ note.semester or 'N/A' }}</span>
+                    <span><i class="fas fa-user"></i> {{ note.uploader.username if note.uploader else 'Unknown'
+                        }}</span>
+                    <span><i class="fas fa-clock"></i> {{ note.upload_time.strftime('%b %d, %Y') if note.upload_time
+                        else 'No Date' }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('download_note', note_id=note.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-download"></i> Download
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No notes available yet. Check back later!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

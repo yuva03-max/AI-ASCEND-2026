@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}Register - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow);
+        animation: slideUp 0.8s ease forwards;
+        border: 1px solid var(--border-color);
+    }
+
+    .register-icon {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .register-icon i {
+        font-size: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 2rem;
+        color: var(--text-color);
+        font-weight: 700;
+    }
+
+    .form-subtitle {
+        text-align: center;
+        color: var(--gray-color);
+        margin-bottom: 25px;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 25px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider span {
+        padding: 0 15px;
+        color: var(--gray-color);
+        font-size: 13px;
+    }
+
+    .social-login {
+        margin-bottom: 10px;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 14px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--card-bg);
+        color: var(--text-color);
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .social-btn:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .social-btn.google {
+        border-color: #ea4335;
+    }
+
+    .social-btn.google:hover {
+        background: rgba(234, 67, 53, 0.05);
+    }
+
+    .google-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        font-size: 16px;
+        transition: var(--transition);
+    }
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .form-footer {
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .form-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .form-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .role-options {
+        display: flex;
+        gap: 15px;
+        margin-top: 8px;
+    }
+
+    .role-option {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .role-option:hover {
+        border-color: var(--primary-color);
+    }
+
+    .role-option.selected {
+        border-color: var(--primary-color);
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .role-option i {
+        font-size: 30px;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .role-option span {
+        font-weight: 500;
+    }
+
+    .role-option input {
+        display: none;
+    }
+
+    .input-hint {
+        font-size: 0.85rem;
+        color: var(--gray-color);
+        margin-top: 5px;
+    }
+
+    .password-strength {
+        height: 4px;
+        border-radius: 2px;
+        margin-top: 8px;
+        background-color: var(--border-color);
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        transition: var(--transition);
+    }
+
+    .password-strength-bar.weak {
+        width: 33%;
+        background-color: var(--danger-color);
+    }
+
+    .password-strength-bar.medium {
+        width: 66%;
+        background-color: var(--warning-color);
+    }
+
+    .password-strength-bar.strong {
+        width: 100%;
+        background-color: var(--success-color);
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 24px 20px;
+            margin: 0 10px;
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+        }
+
+        .role-options {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .role-option {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .role-option i {
+            margin-bottom: 0;
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="register-icon">
+        <i class="fas fa-user-plus"></i>
+    </div>
+    <h2 class="form-title">Create Account</h2>
+    <p class="form-subtitle">Join to access study materials and notes</p>
+
+    <!-- Google Signup (only if configured) -->
+    {% if google_enabled %}
+    <div class="social-login">
+        <a href="{{ url_for('google_login') }}" class="social-btn google">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Sign up with Google
+        </a>
+    </div>
+
+    <div class="divider">
+        <span>or register with email</span>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="form-group">
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Enter your full name"
+                required>
+        </div>
+
+        <div class="form-group" id="enrollmentGroup" style="display: none;">
+            <label for="enrollment_number">Enrollment Number *</label>
+            <input type="text" id="enrollment_number" name="enrollment_number" class="form-control"
+                placeholder="Enter your enrollment number" style="text-transform: uppercase;">
+            <div class="input-hint">
+                <i class="fas fa-info-circle"></i> Required for students - used for login
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email address"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Mobile Number</label>
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter your mobile number"
+                pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control"
+                placeholder="Create a password (min 6 characters)" required minlength="6">
+            <div class="password-strength">
+                <div class="password-strength-bar" id="strengthBar"></div>
+            </div>
+            <div class="input-hint" id="strengthText">Password must be at least 6 characters</div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                placeholder="Confirm your password" required>
+        </div>
+
+        <div class="form-group">
+            <label>Select Your Role</label>
+            <div class="role-options">
+                <label class="role-option" id="studentOption">
+                    <input type="radio" name="role" value="student" required>
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Student</span>
+                </label>
+                <label class="role-option" id="professorOption">
+                    <input type="radio" name="role" value="professor" required>
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Professor</span>
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+            <i class="fas fa-user-plus"></i> Create Account
+        </button>
+    </form>
+    <div class="form-footer">
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleOptions = document.querySelectorAll('.role-option');
+        const enrollmentGroup = document.getElementById('enrollmentGroup');
+        const enrollmentInput = document.getElementById('enrollment_number');
+
+        function updateEnrollmentVisibility(role) {
+            if (role === 'student') {
+                enrollmentGroup.style.display = 'block';
+                enrollmentInput.required = true;
+            } else {
+                enrollmentGroup.style.display = 'none';
+                enrollmentInput.required = false;
+                enrollmentInput.value = '';
+            }
+        }
+
+        roleOptions.forEach(function (option) {
+            option.addEventListener('click', function () {
+                roleOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                const selectedRole = this.querySelector('input').value;
+                updateEnrollmentVisibility(selectedRole);
+            });
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role');
+        if (role === 'student') {
+            document.getElementById('studentOption').click();
+        } else if (role === 'professor') {
+            document.getElementById('professorOption').click();
+        }
+
+        enrollmentInput.addEventListener('input', function (e) {
+            this.value = this.value.toUpperCase();
+        });
+
+        document.getElementById('password').addEventListener('input', function (e) {
+            const password = this.value;
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+
+            strengthBar.className = 'password-strength-bar';
+
+            if (password.length < 6) {
+                strengthBar.classList.add('weak');
+                strengthText.textContent = 'Password too short';
+            } else if (password.length < 10) {
+                strengthBar.classList.add('medium');
+                strengthText.textContent = 'Medium strength password';
+            } else {
+                strengthBar.classList.add('strong');
+                strengthText.textContent = 'Strong password';
+            }
+        });
+    });
+</script>
+{% endblock %}

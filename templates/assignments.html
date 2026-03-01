@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .assignment-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary-color);
+        transition: var(--transition);
+    }
+
+    .assignment-card:hover {
+        transform: translateX(5px);
+    }
+
+    .assignment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .assignment-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .deadline-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .deadline-badge.overdue {
+        background: var(--danger-color);
+    }
+
+    .assignment-meta {
+        display: flex;
+        gap: 20px;
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .assignment-desc {
+        color: var(--text-color);
+        line-height: 1.6;
+        background: var(--body-bg);
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .page-header .btn {
+            width: 100%;
+        }
+
+        .assignment-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .assignment-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .assignment-card {
+            padding: 20px 16px;
+        }
+
+        .deadline-badge {
+            width: 100%;
+            display: inline-block;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tasks"></i> Assignments</h1>
+    {% if current_user.role == 'professor' %}
+    <a href="{{ url_for('create_assignment') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create Assignment
+    </a>
+    {% endif %}
+</div>
+
+{% if assignments %}
+<div class="assignments-list">
+    {% for assignment in assignments %}
+    <div class="assignment-card">
+        <div class="assignment-header">
+            <div class="assignment-title">{{ assignment.title }}</div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                {% if assignment.deadline %}
+                <div class="deadline-badge {% if assignment.deadline < now %}overdue{% endif %}">
+                    <i class="fas fa-clock"></i>
+                    Due: {{ assignment.deadline.strftime('%b %d, %Y %H:%M') if assignment.deadline else 'No Deadline' }}
+                </div>
+                {% endif %}
+
+                {% if current_user.id == assignment.created_by or current_user.role == 'admin' %}
+                <form action="{{ url_for('delete_assignment', assignment_id=assignment.id) }}" method="POST"
+                    style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit" class="btn btn-sm"
+                        style="background: #ef4444; color: white; padding: 5px 10px; border-radius: 20px;"
+                        title="Delete Assignment">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="assignment-meta">
+            <div class="meta-item"><i class="fas fa-book"></i> {{ assignment.subject or 'General' }}</div>
+            <div class="meta-item"><i class="fas fa-graduation-cap"></i> {{ assignment.semester or 'N/A' }}</div>
+            <div class="meta-item"><i class="fas fa-user-tie"></i> {{ assignment.creator.username }}</div>
+        </div>
+        {% if assignment.description %}
+        <div class="assignment-desc">
+            {{ assignment.description }}
+        </div>
+        {% endif %}
+
+        {% if current_user.role == 'student' %}
+        <div class="assignment-footer"
+            style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+            <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-paper-plane"></i> Submit Work
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div
+    style="text-align: center; padding: 60px; background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow);">
+    <i class="fas fa-clipboard-list"
+        style="font-size: 60px; color: var(--gray-color); opacity: 0.5; margin-bottom: 20px;"></i>
+    <h3>No Assignments Found</h3>
+    <p>Great! No pending assignments for now.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,538 @@
+{% extends "base.html" %}
+
+{% block title %}Notes Library - College Notes Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-title i {
+        color: var(--primary-color);
+    }
+
+    .filters-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+    }
+
+    .filters-form {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .filter-group .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        font-size: 14px;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .view-options {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .view-toggle {
+        display: flex;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .view-toggle button {
+        padding: 8px 15px;
+        border: none;
+        background: var(--card-bg);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .view-toggle button.active {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .view-toggle button:hover:not(.active) {
+        background: var(--border-color);
+    }
+
+    .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .notes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+        .notes-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .note-card {
+            padding: 16px;
+        }
+
+        .note-card-actions {
+            flex-direction: column;
+        }
+
+        .note-card-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .notes-table {
+        width: 100%;
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .notes-table th,
+    .notes-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .notes-table th {
+        background: var(--body-bg);
+        font-weight: 600;
+    }
+
+    .notes-table tr:hover {
+        background: var(--body-bg);
+    }
+
+    .note-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .note-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+    }
+
+    .note-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .note-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+        color: var(--text-color);
+    }
+
+    .note-badge {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .file-type-badge {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+    }
+
+    .note-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+
+    .meta-item i {
+        width: 16px;
+        color: var(--primary-color);
+    }
+
+    .note-description {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .note-card-actions {
+        display: flex;
+        gap: 10px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .note-list-item {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .note-list-item:hover {
+        transform: translateX(5px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: var(--gray-color);
+        opacity: 0.5;
+        margin-bottom: 20px;
+    }
+
+    .results-count {
+        color: var(--gray-color);
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .notes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-group {
+            min-width: 100%;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .page-header div {
+            flex-direction: column;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .view-options {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="fas fa-book-open"></i> Notes Library</h1>
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ url_for('ai_assistant') }}" class="btn btn-secondary"><i class="fas fa-robot"></i> AI Assistant</a>
+        {% if current_user and current_user.role == 'professor' %}
+        <a href="{{ url_for('upload_note') }}" class="btn btn-primary"><i class="fas fa-upload"></i> Upload Note</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="filters-card">
+    <form method="GET" action="{{ url_for('list_notes') }}" class="filters-form">
+        <div class="filter-group">
+            <label for="search">Search</label>
+            <input type="text" id="search" name="search" class="form-control" placeholder="Search notes..."
+                value="{{ search_query }}">
+        </div>
+        <div class="filter-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" class="form-control">
+                <option value="">All Subjects</option>
+                {% for subject in subjects %}<option value="{{ subject }}" {% if current_subject==subject %}selected{%
+                    endif %}>{{ subject }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="semester">Semester</label>
+            <select id="semester" name="semester" class="form-control">
+                <option value="">All Semesters</option>
+                {% for semester in semesters %}<option value="{{ semester }}" {% if current_semester==semester
+                    %}selected{% endif %}>{{ semester }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="file_type">File Type</label>
+            <select id="file_type" name="file_type" class="form-control">
+                <option value="">All Types</option>
+                {% for ft in file_types %}<option value="{{ ft }}" {% if current_file_type==ft %}selected{% endif %}>{{
+                    ft|capitalize }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="sort">Sort By</label>
+            <select id="sort" name="sort" class="form-control">
+                <option value="date_desc" {% if sort_by=='date_desc' %}selected{% endif %}>Newest First</option>
+                <option value="date_asc" {% if sort_by=='date_asc' %}selected{% endif %}>Oldest First</option>
+                <option value="name_asc" {% if sort_by=='name_asc' %}selected{% endif %}>Name A-Z</option>
+                <option value="name_desc" {% if sort_by=='name_desc' %}selected{% endif %}>Name Z-A</option>
+                <option value="size_desc" {% if sort_by=='size_desc' %}selected{% endif %}>Largest First</option>
+                <option value="popular" {% if sort_by=='popular' %}selected{% endif %}>Most Viewed</option>
+            </select>
+        </div>
+        <input type="hidden" name="view" value="{{ view_mode }}">
+        <div class="filter-buttons">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>
+            <a href="{{ url_for('list_notes') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="view-options">
+    <span style="font-weight: 500;">View:</span>
+    <div class="view-toggle">
+        <button onclick="setView('grid')" class="{% if view_mode == 'grid' %}active{% endif %}"><i
+                class="fas fa-th"></i></button>
+        <button onclick="setView('list')" class="{% if view_mode == 'list' %}active{% endif %}"><i
+                class="fas fa-list"></i></button>
+        <button onclick="setView('table')" class="{% if view_mode == 'table' %}active{% endif %}"><i
+                class="fas fa-table"></i></button>
+    </div>
+    <span class="results-count">{{ notes|length }} note{% if notes|length != 1 %}s{% endif %}</span>
+</div>
+
+{% if notes %}
+{% if view_mode == 'table' %}
+<table class="notes-table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Subject</th>
+            <th>Semester</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Uploaded</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for note in notes %}
+        <tr>
+            <td><strong>{{ note.title }}</strong></td>
+            <td>{{ note.subject or '-' }}</td>
+            <td>{{ note.semester or '-' }}</td>
+            <td><span class="file-type-badge">{{ note.file_type or 'file' }}</span></td>
+            <td>{{ note.file_size|filesize }}</td>
+            <td>{{ note.upload_time.strftime('%b %d, %Y') if note.upload_time else 'No Date' }}</td>
+            <td>
+                <a href="{{ url_for('view_note', note_id=note.id) }}" class="btn btn-secondary btn-sm"><i
+                        class="fas fa-eye"></i></a>
+                <a href="{{ url_for('download_note', note_id=note.id) }}" class="btn btn-primary btn-sm"><i
+                        class="fas fa-download"></i></a>
+                {% if current_user and current_user.role == 'professor' and note.uploaded_by == current_user.id %}
+                <form action="{{ url_for('delete_note', note_id=note.id) }}" method="POST" style="display: inline;"
+                    onsubmit="return confirm('Delete this note?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif view_mode == 'list' %}
+<div class="notes-list">
+    {% for note in notes %}
+    <div class="note-list-item">
+        <div>
+            <h3 style="margin-bottom: 5px;">{{ note.title }}</h3>
+            <div style="color: var(--gray-color); font-size: 0.9rem;">
+                <span><i class="fas fa-book"></i> {{ note.subject or 'General' }}</span> |
+                <span><i class="fas fa-calendar"></i> {{ note.semester or 'N/A' }}</span> |
+                <span><i class="fas fa-user"></i> {{ note.uploader.username }}</span> |
+                <span class="file-type-badge">{{ note.file_type or 'file' }}</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('view_note', note_id=note.id) }}" class="btn btn-secondary btn-sm"><i
+                    class="fas fa-eye"></i> View</a>
+            <a href="{{ url_for('download_note', note_id=note.id) }}" class="btn btn-primary btn-sm"><i
+                    class="fas fa-download"></i> Download</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="notes-grid">
+    {% for note in notes %}
+    <div class="note-card">
+        <div class="note-card-header">
+            <div>
+                <h3>{{ note.title }}</h3>
+                <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px;">
+                    <span class="file-type-badge">{{ note.file_type or 'file' }}</span>
+                    {% if note.is_verified %}
+                    <span title="Blockchain Verified" style="color: var(--success-color); font-size: 0.8rem;">
+                        <i class="fas fa-shield-alt"></i> Verified
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if note.semester %}<span class="note-badge">{{ note.semester }}</span>{% endif %}
+        </div>
+        <div class="note-card-meta">
+            {% if note.subject %}<div class="meta-item"><i class="fas fa-book"></i><span>{{ note.subject }}</span></div>
+            {% endif %}
+            <div class="meta-item"><i class="fas fa-user"></i><span>{{ note.uploader.username }}</span></div>
+            <div class="meta-item"><i class="fas fa-calendar"></i><span>{{ note.upload_time.strftime('%B %d, %Y') if
+                    note.upload_time else 'No Date'
+                    }}</span></div>
+            {% if note.file_size %}<div class="meta-item"><i class="fas fa-file"></i><span>{{ note.file_size|filesize
+                    }}</span></div>{% endif %}
+            <div class="meta-item"><i class="fas fa-eye"></i><span>{{ note.view_count or 0 }} views</span></div>
+        </div>
+        {% if note.description %}<p class="note-description">{{ note.description[:100] }}{% if note.description|length >
+            100 %}...{% endif %}</p>{% endif %}
+        <div class="note-card-actions">
+            <a href="{{ url_for('view_note', note_id=note.id) }}" class="btn btn-secondary btn-sm"><i
+                    class="fas fa-eye"></i> View</a>
+            <a href="{{ url_for('download_note', note_id=note.id) }}" class="btn btn-primary btn-sm"><i
+                    class="fas fa-download"></i> Download</a>
+            {% if current_user and current_user.role == 'professor' and note.uploaded_by == current_user.id %}
+            <form action="{{ url_for('delete_note', note_id=note.id) }}" method="POST" style="display: inline;"
+                onsubmit="return confirm('Delete this note?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+{% endif %}
+
+{% if pagination.pages > 1 %}
+<div style="margin-top: 30px; display: flex; justify-content: center; gap: 5px;">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('list_notes', page=pagination.prev_num, search=search_query, subject=current_subject, semester=current_semester, file_type=current_file_type, view=view_mode, sort=sort_by) }}"
+        class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i> Prev</a>
+    {% endif %}
+
+    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {% if page_num %}
+    {% if pagination.page == page_num %}
+    <span class="btn btn-primary btn-sm">{{ page_num }}</span>
+    {% else %}
+    <a href="{{ url_for('list_notes', page=page_num, search=search_query, subject=current_subject, semester=current_semester, file_type=current_file_type, view=view_mode, sort=sort_by) }}"
+        class="btn btn-secondary btn-sm">{{ page_num }}</a>
+    {% endif %}
+    {% else %}
+    <span class="btn btn-secondary btn-sm disabled">...</span>
+    {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('list_notes', page=pagination.next_num, search=search_query, subject=current_subject, semester=current_semester, file_type=current_file_type, view=view_mode, sort=sort_by) }}"
+        class="btn btn-secondary btn-sm">Next <i class="fas fa-chevron-right"></i></a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-folder-open"></i>
+    <h3>No Notes Found</h3>
+    <p>{% if search_query or current_subject or current_semester %}No notes match your criteria.{% else %}No notes
+        uploaded yet.{% endif %}</p>
+    {% if current_user and current_user.role == 'professor' %}
+    <a href="{{ url_for('upload_note') }}" class="btn btn-primary" style="margin-top: 20px;"><i
+            class="fas fa-upload"></i> Upload First Note</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function setView(mode) {
+        const url = new URL(window.location);
+        url.searchParams.set('view', mode);
+        window.location = url;
+    }
+</script>
+{% endblock %}
